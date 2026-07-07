@@ -1,16 +1,28 @@
-# React + Vite
+# 💸 MMG (My Money Gue) - Personal Finance Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplikasi pencatat keuangan pribadi super ringan dan responsif, dirancang khusus untuk pengalaman *mobile* (Mobile-First Design). Aplikasi ini membantu melacak arus kas (Pemasukan & Pengeluaran), memantau saldo di berbagai dompet, serta mengelola tabungan darurat melalui fitur Brankas Deposito.
 
-Currently, two official plugins are available:
+## ✨ Fitur Utama
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- 📥 **Catat Pemasukan & Pengeluaran:** Pencatatan super cepat dengan dukungan multi-kategori.
+- 🧮 **Kalkulator Kembalian Otomatis:** Input uang bayar dan kembalian, sistem akan otomatis menghitung total pengeluaran bersih.
+- 💼 **Manajemen Multi-Dompet:** Lacak saldo secara terpisah (Cash, DANA, QRIS, dll).
+- 🔒 **Brankas Deposito:** Amankan uang tabunganmu agar tidak tercampur dengan "Saldo Aktif" yang siap dijajankan. Fitur ini dilengkapi opsi Nabung dan Cairkan.
+- 📊 **Analisis Grafik Interaktif:** Pantau pergerakan uangmu melalui grafik garis (*line chart*) dan diagram lingkaran (*pie chart*) dengan filter waktu: Mingguan, Bulanan, hingga Tahunan.
+- 💾 **100% Offline & Private:** Tidak ada server pihak ketiga. Semua riwayat keuanganmu disimpan dengan aman di dalam memori perangkatmu sendiri (`localStorage`).
 
-## React Compiler
+## 🛠️ Teknologi yang Digunakan
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Framework:** React.js + Vite
+- **Styling:** Tailwind CSS (Utility-first framework)
+- **Charts/Graphs:** Recharts
+- **Icons:** Lucide React
+- **Mobile Wrapper:** Capacitor JS (Untuk konversi menjadi Android `.apk`)
 
-## Expanding the Oxlint configuration
+## 🚀 Cara Menjalankan di Komputer Lokal
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Pastikan kamu sudah menginstal **Node.js** di komputermu.
+
+1. *Clone repository* ini:
+   ```bash
+   git clone [https://github.com/Jacky284/MMG.git](https://github.com/Jacky284/MMG.git)
