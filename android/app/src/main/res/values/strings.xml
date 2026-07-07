@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MMG (My Money Gue)</string>
+    <string name="title_activity_main">MMG (My Money Gue)</string>
+    <string name="package_name">com.zaki.mmg</string>
+    <string name="custom_url_scheme">com.zaki.mmg</string>
+</resources>

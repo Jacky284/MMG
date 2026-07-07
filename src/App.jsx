@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   Home, FileText, PlusCircle, BarChart2, 
-  Bell, Download, Upload, User, Plus, ChevronLeft, ChevronRight, Briefcase, Lock, Unlock
+  Bell, Download, Upload, User, Plus, ChevronLeft, ChevronRight, Briefcase, Lock, Unlock, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 // --- KONFIGURASI PALET WARNA ---
@@ -22,7 +22,7 @@ const EXPENSE_CATEGORIES = Object.keys(EXPENSE_COLORS);
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [transactions, setTransactions] = useState([]);
-  const [wallets, setWallets] = useState(['Cash', 'Dana', 'Qris']);
+  const [wallets, setWallets] = useState(['Cash', 'Dana']);
   const [deposits, setDeposits] = useState([]); 
   
   useEffect(() => {
@@ -41,21 +41,18 @@ export default function App() {
     localStorage.setItem('mmg_deposits', JSON.stringify(deposits));
   }, [transactions, wallets, deposits]);
 
-  // --- KOMPONEN BANTUAN: UI HEADER (DISEIMBANGKAN DENGAN HOME) ---
+  // --- KOMPONEN BANTUAN: UI HEADER ---
   const PageHeader = ({ title, subtitle, icon: Icon }) => (
     <div className="flex justify-between items-center pt-1 mb-2">
       <div className="flex items-center gap-3">
-        {/* Background icon dan ukuran disamakan dengan profile icon di Home */}
         <div className="w-10 h-10 rounded-full bg-[#ecf4eb] flex items-center justify-center text-[#2d4a3e] font-bold shadow-sm">
           <Icon size={20} />
         </div>
         <div>
-          {/* Ukuran font dan spasi disamakan persis */}
           <p className="text-[11px] text-gray-500 font-medium">{subtitle}</p>
           <p className="text-base font-bold text-gray-800 leading-tight">{title}</p>
         </div>
       </div>
-      {/* Icon Notifikasi ditambahkan ke semua page biar layout seimbang */}
       <div className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-600">
         <Bell size={18} />
       </div>
@@ -160,7 +157,6 @@ export default function App() {
 
     return (
       <div className="p-4 pb-24 space-y-4">
-        {/* Header Home dipindahkan ke komponen terpisah biar bisa dipanggil ulang tanpa ribet */}
         <PageHeader title="Muhammad Zaki" subtitle="Welcome 👋" icon={User} />
 
         <div className="bg-[#2d4a3e] rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden">
@@ -487,9 +483,19 @@ export default function App() {
     );
   };
 
-  // 4. PAGE STATS 
+  // 4. PAGE STATS (UPDATED DENGAN DAFTAR TRANSAKSI & ACCORDION)
   const ActivitiesView = () => {
     const { period, setPeriod, offset, setOffset, start, end, label } = useTimeFilter();
+    
+    // State untuk nyimpen bulan mana yang lagi di-expand pas filter "Per Tahun"
+    const [expandedMonths, setExpandedMonths] = useState({});
+
+    const toggleMonth = (monthStr) => {
+      setExpandedMonths(prev => ({
+        ...prev,
+        [monthStr]: !prev[monthStr]
+      }));
+    };
 
     const filteredTxs = transactions.filter(t => {
       const txDate = new Date(t.date);
@@ -516,6 +522,19 @@ export default function App() {
         .sort((a, b) => b[1].timestamp - a[1].timestamp)
         .map(([month, data]) => ({ month, ...data }));
     }, [transactions]);
+
+    // Logika nge-group transaksi per bulan khusus kalau lagi pilih "Per Tahun"
+    const txsGroupedByMonth = useMemo(() => {
+      if (period !== 'year') return {};
+      const groups = {};
+      filteredTxs.forEach(t => {
+        const txDate = new Date(t.date);
+        const monthStr = txDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+        if (!groups[monthStr]) groups[monthStr] = [];
+        groups[monthStr].push(t);
+      });
+      return groups;
+    }, [filteredTxs, period]);
 
     return (
       <div className="p-4 pb-24 space-y-4">
@@ -580,6 +599,42 @@ export default function App() {
             )) : <p className="text-center text-xs text-gray-400 py-2">Belum ada mutasi</p>}
           </div>
         </div>
+
+        {/* SECTION BARU: DAFTAR TRANSAKSI DI STATS */}
+        <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 min-h-[250px]">
+          <h3 className="font-bold text-gray-800 mb-3 text-xs text-center">Detail Transaksi</h3>
+          <div className="space-y-2">
+            {period === 'year' ? (
+              /* Jika pilih Tahun, tampilkan Accordion/Dropdown per bulan */
+              Object.keys(txsGroupedByMonth).length > 0 ? (
+                Object.entries(txsGroupedByMonth).map(([monthStr, txs]) => (
+                  <div key={monthStr} className="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+                    <button 
+                      onClick={() => toggleMonth(monthStr)} 
+                      className="w-full bg-[#ecf4eb]/60 p-3 flex justify-between items-center transition hover:bg-[#ecf4eb]"
+                    >
+                      <span className="font-bold text-xs text-[#2d4a3e]">{monthStr}</span>
+                      <span className="text-[#2d4a3e]">
+                        {expandedMonths[monthStr] ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                      </span>
+                    </button>
+                    {expandedMonths[monthStr] && (
+                      <div className="p-2 space-y-2 bg-white">
+                        {txs.map(t => <TransactionItem key={t.id} t={t} />)}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : <p className="text-center text-gray-400 text-xs py-8">Belum ada data di tahun ini</p>
+            ) : (
+              /* Jika pilih Minggu/Bulan, tampilkan langsung list-nya */
+              filteredTxs.length > 0 ? (
+                filteredTxs.map(t => <TransactionItem key={t.id} t={t} />)
+              ) : <p className="text-center text-gray-400 text-xs py-8">Belum ada data di periode ini</p>
+            )}
+          </div>
+        </div>
+
       </div>
     );
   };
