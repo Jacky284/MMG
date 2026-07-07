@@ -19,10 +19,58 @@ const PALETTE = Object.values(EXPENSE_COLORS);
 const INCOME_CATEGORIES = ['Gaji', 'Freelance', 'Giving/Pemberian'];
 const EXPENSE_CATEGORIES = Object.keys(EXPENSE_COLORS);
 
+// --- KOMPONEN BARU: SPLASH SCREEN (WINDOWS HELLO STYLE) ---
+const SplashScreen = ({ onComplete }) => {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    // Timeline Animasi:
+    // 0ms: Layar gelap
+    // 300ms: Logo & Teks mulai muncul (Step 1)
+    // 2500ms: Mulai transisi fade out (Step 2)
+    // 3000ms: Hapus komponen dari layar (onComplete)
+    
+    const t1 = setTimeout(() => setStep(1), 300); 
+    const t2 = setTimeout(() => setStep(2), 2500); 
+    const t3 = setTimeout(() => onComplete(), 3000); 
+
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [onComplete]);
+
+  return (
+    <div className={`fixed inset-0 bg-[#f8faf8] z-[9999] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${step === 2 ? 'opacity-0' : 'opacity-100'}`}>
+      
+      {/* Efek Lingkaran Latar ala Premium UI */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-emerald-100/50 rounded-full blur-3xl opacity-60"></div>
+
+      <div className="relative flex flex-col items-center justify-center z-10">
+        {/* Logo Default Vite (berada di folder public/vite.svg) */}
+        <img 
+          src="/favicon.svg" 
+          alt="App Logo" 
+          className={`w-24 h-24 mb-6 transition-all duration-1000 ease-out transform ${step >= 1 ? 'scale-100 opacity-100 translate-y-0' : 'scale-50 opacity-0 translate-y-10'}`} 
+        />
+        
+        <h1 className={`text-2xl font-bold text-[#2d4a3e] tracking-wide transition-all duration-1000 delay-300 ease-out transform ${step >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+          Welcome, Zaki!
+        </h1>
+        
+        <div className={`flex items-center gap-2 mt-3 transition-all duration-1000 delay-500 ease-out transform ${step >= 1 ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+          <div className="w-4 h-4 border-2 border-[#2d4a3e] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 text-sm font-medium tracking-wide">
+            Menyiapkan ruang kerja...
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true); // State untuk mengontrol Splash Screen
   const [activeTab, setActiveTab] = useState('home');
   const [transactions, setTransactions] = useState([]);
-  const [wallets, setWallets] = useState(['Cash', 'Dana']);
+  const [wallets, setWallets] = useState(['Cash', 'Dana', 'Debit (BCA)']);
   const [deposits, setDeposits] = useState([]); 
   
   useEffect(() => {
@@ -483,11 +531,9 @@ export default function App() {
     );
   };
 
-  // 4. PAGE STATS (UPDATED DENGAN DAFTAR TRANSAKSI & ACCORDION)
+  // 4. PAGE STATS (DENGAN DAFTAR TRANSAKSI & ACCORDION)
   const ActivitiesView = () => {
     const { period, setPeriod, offset, setOffset, start, end, label } = useTimeFilter();
-    
-    // State untuk nyimpen bulan mana yang lagi di-expand pas filter "Per Tahun"
     const [expandedMonths, setExpandedMonths] = useState({});
 
     const toggleMonth = (monthStr) => {
@@ -523,7 +569,6 @@ export default function App() {
         .map(([month, data]) => ({ month, ...data }));
     }, [transactions]);
 
-    // Logika nge-group transaksi per bulan khusus kalau lagi pilih "Per Tahun"
     const txsGroupedByMonth = useMemo(() => {
       if (period !== 'year') return {};
       const groups = {};
@@ -600,12 +645,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* SECTION BARU: DAFTAR TRANSAKSI DI STATS */}
         <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 min-h-[250px]">
           <h3 className="font-bold text-gray-800 mb-3 text-xs text-center">Detail Transaksi</h3>
           <div className="space-y-2">
             {period === 'year' ? (
-              /* Jika pilih Tahun, tampilkan Accordion/Dropdown per bulan */
               Object.keys(txsGroupedByMonth).length > 0 ? (
                 Object.entries(txsGroupedByMonth).map(([monthStr, txs]) => (
                   <div key={monthStr} className="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
@@ -627,14 +670,12 @@ export default function App() {
                 ))
               ) : <p className="text-center text-gray-400 text-xs py-8">Belum ada data di tahun ini</p>
             ) : (
-              /* Jika pilih Minggu/Bulan, tampilkan langsung list-nya */
               filteredTxs.length > 0 ? (
                 filteredTxs.map(t => <TransactionItem key={t.id} t={t} />)
               ) : <p className="text-center text-gray-400 text-xs py-8">Belum ada data di periode ini</p>
             )}
           </div>
         </div>
-
       </div>
     );
   };
@@ -764,40 +805,45 @@ export default function App() {
     );
   };
 
-  // --- BOTTOM NAV ---
+  // --- RENDERING UTAMA ---
   return (
-    <div className="min-h-screen bg-[#f8faf8] font-sans flex justify-center">
-      <div className="w-full max-w-md relative min-h-screen shadow-2xl overflow-hidden bg-white/50">
-        <div className="overflow-y-auto h-screen no-scrollbar">
-          {activeTab === 'home' && <HomeView />}
-          {activeTab === 'details' && <DetailsView />}
-          {activeTab === 'add' && <AddView />}
-          {activeTab === 'activities' && <ActivitiesView />}
-          {activeTab === 'deposito' && <DepositoView />}
-        </div>
-        <div className="absolute bottom-0 w-full bg-[#2d4a3e] px-5 py-4 rounded-t-[25px] flex justify-between items-end z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-          <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'home' ? 'text-white' : 'text-emerald-100/50'}`}>
-            <Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />
-            <span className="text-[9px] font-medium">Home</span>
-          </button>
-          <button onClick={() => setActiveTab('details')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'details' ? 'text-white' : 'text-emerald-100/50'}`}>
-            <FileText size={20} strokeWidth={activeTab === 'details' ? 2.5 : 2} />
-            <span className="text-[9px] font-medium">Details</span>
-          </button>
-          <button onClick={() => setActiveTab('add')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'add' ? 'text-white' : 'text-emerald-100/50'}`}>
-            <PlusCircle size={20} strokeWidth={activeTab === 'add' ? 2.5 : 2} />
-            <span className="text-[9px] font-medium">Add Tx</span>
-          </button>
-          <button onClick={() => setActiveTab('activities')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'activities' ? 'text-white' : 'text-emerald-100/50'}`}>
-            <BarChart2 size={20} strokeWidth={activeTab === 'activities' ? 2.5 : 2} />
-            <span className="text-[9px] font-medium">Stats</span>
-          </button>
-          <button onClick={() => setActiveTab('deposito')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'deposito' ? 'text-white' : 'text-emerald-100/50'}`}>
-            <Briefcase size={20} strokeWidth={activeTab === 'deposito' ? 2.5 : 2} />
-            <span className="text-[9px] font-medium">Deposito</span>
-          </button>
+    <>
+      {/* Tampilkan Splash Screen di atas aplikasi jika showSplash masih true */}
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      
+      <div className="min-h-screen bg-[#f8faf8] font-sans flex justify-center">
+        <div className="w-full max-w-md relative min-h-screen shadow-2xl overflow-hidden bg-white/50">
+          <div className="overflow-y-auto h-screen no-scrollbar">
+            {activeTab === 'home' && <HomeView />}
+            {activeTab === 'details' && <DetailsView />}
+            {activeTab === 'add' && <AddView />}
+            {activeTab === 'activities' && <ActivitiesView />}
+            {activeTab === 'deposito' && <DepositoView />}
+          </div>
+          <div className="absolute bottom-0 w-full bg-[#2d4a3e] px-5 py-4 rounded-t-[25px] flex justify-between items-end z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+            <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'home' ? 'text-white' : 'text-emerald-100/50'}`}>
+              <Home size={20} strokeWidth={activeTab === 'home' ? 2.5 : 2} />
+              <span className="text-[9px] font-medium">Home</span>
+            </button>
+            <button onClick={() => setActiveTab('details')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'details' ? 'text-white' : 'text-emerald-100/50'}`}>
+              <FileText size={20} strokeWidth={activeTab === 'details' ? 2.5 : 2} />
+              <span className="text-[9px] font-medium">Details</span>
+            </button>
+            <button onClick={() => setActiveTab('add')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'add' ? 'text-white' : 'text-emerald-100/50'}`}>
+              <PlusCircle size={20} strokeWidth={activeTab === 'add' ? 2.5 : 2} />
+              <span className="text-[9px] font-medium">Add Tx</span>
+            </button>
+            <button onClick={() => setActiveTab('activities')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'activities' ? 'text-white' : 'text-emerald-100/50'}`}>
+              <BarChart2 size={20} strokeWidth={activeTab === 'activities' ? 2.5 : 2} />
+              <span className="text-[9px] font-medium">Stats</span>
+            </button>
+            <button onClick={() => setActiveTab('deposito')} className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'deposito' ? 'text-white' : 'text-emerald-100/50'}`}>
+              <Briefcase size={20} strokeWidth={activeTab === 'deposito' ? 2.5 : 2} />
+              <span className="text-[9px] font-medium">Deposito</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
