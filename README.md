@@ -6,7 +6,7 @@ Aplikasi pencatat keuangan pribadi super ringan dan responsif, dirancang khusus 
 
 - 📥 **Catat Pemasukan & Pengeluaran:** Pencatatan super cepat dengan dukungan multi-kategori.
 - 🧮 **Kalkulator Kembalian Otomatis:** Input uang bayar dan kembalian, sistem akan otomatis menghitung total pengeluaran bersih.
-- 💼 **Manajemen Multi-Dompet:** Lacak saldo secara terpisah (Cash, DANA, QRIS, dll).
+- 💼 **Manajemen Multi-Dompet:** Lacak saldo secara terpisah (Cash, DANA, Debit, dll).
 - 🔒 **Brankas Deposito:** Amankan uang tabunganmu agar tidak tercampur dengan "Saldo Aktif" yang siap dijajankan. Fitur ini dilengkapi opsi Nabung dan Cairkan.
 - 📊 **Analisis Grafik Interaktif:** Pantau pergerakan uangmu melalui grafik garis (*line chart*) dan diagram lingkaran (*pie chart*) dengan filter waktu: Mingguan, Bulanan, hingga Tahunan.
 - 💾 **100% Offline & Private:** Tidak ada server pihak ketiga. Semua riwayat keuanganmu disimpan dengan aman di dalam memori perangkatmu sendiri (`localStorage`).
